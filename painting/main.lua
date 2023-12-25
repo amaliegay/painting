@@ -1,8 +1,14 @@
-local ui = include("JosephMcKean.lib.ui")
+local lib = include("JosephMcKean.lib")
+local ui = lib.ui
+
+local configDefaults = { mod = { id = "painting", name = "Painting" }, logLevel = "INFO" }
+local mod = lib.Mod:new(configDefaults)
+local log = mod.log()
 
 ---@param e tes3uiEventData
 local function onMouseStillPressed(e)
 	local canvas = e.source
+	log:info("mouseStillPressed on %s", canvas.id)
 	local pixelBuffer = {}
 	local offset = 0
 	local white = { 1, 1, 1 }
@@ -34,5 +40,12 @@ event.register("initialized", function(_)
 	event.register("uiActivated", function(_)
 		local _, root = ui.createMenu({ id = "MenuPainting", size = { width = 512, height = 512 } })
 		createCanvas(root)
+		local parent = root
+		while (parent) do
+			parent:register("mouseStillPressed", function(e) 
+				log:info("mouseStillPressed on %s", e.source.id)
+			end)
+			parent = parent.parent
+		end
 	end, { filter = "MenuOptions" })
 end)
